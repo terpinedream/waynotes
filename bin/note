@@ -1,0 +1,329 @@
+#!/usr/bin/env bash
+
+# WayNotes - Terminal Note Taking System
+# AUR Package: noteticker
+
+set -e
+
+# Configuration
+NOTES_DIR="${NOTES_DIR:-$HOME/.local/share/waynotes}"
+CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/waynotes}"
+MAX_NOTES="${MAX_NOTES:-100}"
+NOTE_PREFIX="${NOTE_PREFIX:-📝}"
+
+# Ensure directories exist
+mkdir -p "$NOTES_DIR"
+mkdir -p "$CONFIG_DIR"
+
+# Load config if exists
+if [[ -f "$CONFIG_DIR/config" ]]; then
+    source "$CONFIG_DIR/config"
+fi
+
+# Help function
+show_help() {
+    cat << EOF
+WayNotes - Terminal Note Taking System
+
+Usage: note [OPTIONS] [MESSAGE]
+
+Options:
+    -h, --help          Show this help message
+    -l, --list          List recent notes
+    -c, --clear         Clear all notes
+    -e, --edit          Edit the most recent note
+    -s, --search TEXT   Search notes containing TEXT
+    -t, --type TYPE     Set note type (default: general)
+    -f, --file FILE     Save note to specific file
+    -v, --version       Show version
+    --clip              Capture clipboard content and save as note
+
+Note Types:
+    general, todo, idea, reminder, quote, code
+
+Examples:
+    note "Remember to buy groceries"
+    note -t todo "Fix the bug in login module"
+    note -t idea "Add dark mode to the app"
+    note --clip          # Capture clipboard content as note
+    note -t quote --clip # Capture clipboard as quote note
+    note -l              # List recent notes
+    note -s "groceries"  # Search for notes containing "groceries"
+
+Configuration:
+    Set environment variables or edit $CONFIG_DIR/config:
+    - NOTES_DIR: Directory to store notes (default: ~/.local/share/waynotes)
+    - MAX_NOTES: Maximum number of notes to keep (default: 100)
+    - NOTE_PREFIX: Prefix for notes (default: 📝)
+EOF
+}
+
+# Version function
+show_version() {
+    echo "WayNotes v1.0.0"
+    echo "AUR Package: noteticker"
+}
+
+# Get timestamp
+get_timestamp() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
+# Save note
+save_note() {
+    local message="$1"
+    local note_type="${2:-general}"
+    local timestamp=$(get_timestamp)
+    local note_file="$NOTES_DIR/notes.txt"
+    
+    # Create note entry
+    local note_entry="$timestamp|$note_type|$message"
+    
+    # Add to beginning of file (most recent first)
+    echo "$note_entry" | cat - "$note_file" > "$note_file.tmp" 2>/dev/null || echo "$note_entry" > "$note_file.tmp"
+    mv "$note_file.tmp" "$note_file"
+    
+    # Trim file if it exceeds MAX_NOTES
+    if [[ -f "$note_file" ]]; then
+        local line_count=$(wc -l < "$note_file")
+        if [[ $line_count -gt $MAX_NOTES ]]; then
+            head -n $MAX_NOTES "$note_file" > "$note_file.tmp"
+            mv "$note_file.tmp" "$note_file"
+        fi
+    fi
+    
+    echo "Note saved: $message"
+}
+
+# List notes
+list_notes() {
+    local count="${1:-10}"
+    local note_file="$NOTES_DIR/notes.txt"
+    
+    if [[ ! -f "$note_file" ]] || [[ ! -s "$note_file" ]]; then
+        echo "No notes found."
+        return
+    fi
+    
+    echo "Recent notes:"
+    echo "============="
+    
+    local i=1
+    while IFS='|' read -r timestamp type message; do
+        case "$type" in
+            "todo") icon="☐" ;;
+            "idea") icon="💡" ;;
+            "reminder") icon="⏰" ;;
+            "quote") icon="💬" ;;
+            "code") icon="💻" ;;
+            *) icon="$NOTE_PREFIX" ;;
+        esac
+        
+        printf "%2d. %s %s\n" "$i" "$icon" "$message"
+        printf "    %s (%s)\n" "$timestamp" "$type"
+        echo
+        
+        ((i++))
+        if [[ $i -gt $count ]]; then
+            break
+        fi
+    done < "$note_file"
+}
+
+# Search notes
+search_notes() {
+    local search_term="$1"
+    local note_file="$NOTES_DIR/notes.txt"
+    
+    if [[ ! -f "$note_file" ]]; then
+        echo "No notes found."
+        return
+    fi
+    
+    echo "Search results for '$search_term':"
+    echo "=================================="
+    
+    local found=0
+    while IFS='|' read -r timestamp type message; do
+        if [[ "$message" =~ $search_term ]] || [[ "$type" =~ $search_term ]]; then
+            case "$type" in
+                "todo") icon="☐" ;;
+                "idea") icon="💡" ;;
+                "reminder") icon="⏰" ;;
+                "quote") icon="💬" ;;
+                "code") icon="💻" ;;
+                *) icon="$NOTE_PREFIX" ;;
+            esac
+            
+            printf "%s %s\n" "$icon" "$message"
+            printf "    %s (%s)\n" "$timestamp" "$type"
+            echo
+            
+            ((found++))
+        fi
+    done < "$note_file"
+    
+    if [[ $found -eq 0 ]]; then
+        echo "No notes found matching '$search_term'"
+    fi
+}
+
+# Clear all notes
+clear_notes() {
+    local note_file="$NOTES_DIR/notes.txt"
+    if [[ -f "$note_file" ]]; then
+        rm "$note_file"
+        echo "All notes cleared."
+    else
+        echo "No notes to clear."
+    fi
+}
+
+# Edit most recent note
+edit_note() {
+    local note_file="$NOTES_DIR/notes.txt"
+    if [[ ! -f "$note_file" ]] || [[ ! -s "$note_file" ]]; then
+        echo "No notes to edit."
+        return
+    fi
+    
+    # Get the first line (most recent note)
+    local first_line=$(head -n 1 "$note_file")
+    IFS='|' read -r timestamp type message <<< "$first_line"
+    
+    # Create temporary file for editing
+    local temp_file=$(mktemp)
+    echo "$message" > "$temp_file"
+    
+    # Open editor
+    ${EDITOR:-nano} "$temp_file"
+    
+    # Read edited message
+    local edited_message=$(cat "$temp_file")
+    rm "$temp_file"
+    
+    # Update the note
+    local new_entry="$timestamp|$type|$edited_message"
+    sed -i "1s/.*/$new_entry/" "$note_file"
+    
+    echo "Note updated: $edited_message"
+}
+
+# Main script logic
+main() {
+    local note_type="general"
+    local message=""
+    local use_clipboard=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            -v|--version)
+                show_version
+                exit 0
+                ;;
+            -l|--list)
+                list_notes "$2"
+                exit 0
+                ;;
+            -c|--clear)
+                clear_notes
+                exit 0
+                ;;
+            -e|--edit)
+                edit_note
+                exit 0
+                ;;
+            -s|--search)
+                if [[ -z "$2" ]]; then
+                    echo "Error: Search term required"
+                    exit 1
+                fi
+                search_notes "$2"
+                exit 0
+                ;;
+            -t|--type)
+                if [[ -z "$2" ]]; then
+                    echo "Error: Note type required"
+                    exit 1
+                fi
+                note_type="$2"
+                shift 2
+                ;;
+            -f|--file)
+                if [[ -z "$2" ]]; then
+                    echo "Error: File path required"
+                    exit 1
+                fi
+                NOTES_DIR="$(dirname "$2")"
+                shift 2
+                ;;
+            --clip)
+                use_clipboard=true
+                shift
+                ;;
+            -*)
+                echo "Unknown option: $1"
+                show_help
+                exit 1
+                ;;
+            *)
+                message="$1"
+                shift
+                ;;
+        esac
+    done
+    
+    # Handle clipboard capture
+    if [[ "$use_clipboard" == true ]]; then
+        # Try to get clipboard content
+        if command -v xclip >/dev/null 2>&1; then
+            message=$(xclip -out -selection clipboard 2>/dev/null)
+        elif command -v xsel >/dev/null 2>&1; then
+            message=$(xsel --clipboard 2>/dev/null)
+        elif command -v wl-copy >/dev/null 2>&1; then
+            message=$(wl-paste 2>/dev/null)
+        elif command -v pbcopy >/dev/null 2>&1; then
+            message=$(pbpaste 2>/dev/null)
+        else
+            echo "Error: No clipboard tool found. Please install xclip, xsel, wl-clipboard, or pbcopy."
+            exit 1
+        fi
+        
+        # Validate clipboard content
+        if [[ -z "$message" ]]; then
+            echo "Error: Clipboard is empty or no content found"
+            exit 1
+        fi
+        
+        echo "Clipboard content captured and saved as note"
+    else
+        # If no message provided, read from stdin or prompt
+        if [[ -z "$message" ]]; then
+            if [[ -t 0 ]]; then
+                # Interactive mode
+                echo -n "Enter note: "
+                read -r message
+            else
+                # Read from stdin
+                message=$(cat)
+            fi
+        fi
+        
+        # Validate message
+        if [[ -z "$message" ]]; then
+            echo "Error: No message provided"
+            exit 1
+        fi
+    fi
+    
+    # Save the note
+    save_note "$message" "$note_type"
+}
+
+# Run main function with all arguments
+main "$@"

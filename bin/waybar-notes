@@ -1,0 +1,364 @@
+#!/usr/bin/env bash
+
+# WayNotes - Waybar Module Script
+# Displays recent notes in a marquee style
+
+# Don't exit on error for waybar compatibility
+# set -e
+
+# Configuration
+NOTES_DIR="${NOTES_DIR:-$HOME/.local/share/waynotes}"
+CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/waynotes}"
+MAX_DISPLAY_NOTES="${MAX_DISPLAY_NOTES:-5}"
+CYCLE_INTERVAL="${CYCLE_INTERVAL:-5}"
+MARQUEE_SPEED="${MARQUEE_SPEED:-0.1}"
+MAX_LENGTH="${MAX_LENGTH:-50}"
+SEPARATOR="${SEPARATOR:-" | "}"
+
+# Ensure directories exist
+mkdir -p "$NOTES_DIR"
+mkdir -p "$CONFIG_DIR"
+
+# Load config if exists
+if [[ -f "$CONFIG_DIR/config" ]]; then
+    source "$CONFIG_DIR/config"
+fi
+
+# State file for cycling
+STATE_FILE="$CONFIG_DIR/waybar-state"
+
+# Initialize state
+init_state() {
+    if [[ ! -f "$STATE_FILE" ]]; then
+        echo "0" > "$STATE_FILE"
+    fi
+}
+
+# Get current state
+get_current_state() {
+    cat "$STATE_FILE" 2>/dev/null || echo "0"
+}
+
+# Set state
+set_state() {
+    echo "$1" > "$STATE_FILE"
+}
+
+# Get note icon based on type
+get_note_icon() {
+    local type="$1"
+    case "$type" in
+        "todo") echo "↪" ;;
+        "idea") echo "✔" ;;
+        "reminder") echo "!" ;;
+        "quote") echo "•" ;;
+        "code") echo "★" ;;
+        *) echo "↳" ;;
+    esac
+}
+
+# Open file with system default editor
+open_with_editor() {
+    local file="$1"
+    
+    # Try multiple approaches to open the file
+    if [[ -n "$EDITOR" ]]; then
+        # Use user's preferred editor
+        $EDITOR "$file" &
+        return 0
+    elif command -v nvim >/dev/null 2>&1; then
+        # Use nvim if available
+        nvim "$file" &
+        return 0
+    elif command -v vim >/dev/null 2>&1; then
+        # Use vim if available
+        vim "$file" &
+        return 0
+    elif command -v nano >/dev/null 2>&1; then
+        # Use nano if available
+        nano "$file" &
+        return 0
+    elif command -v xdg-open >/dev/null 2>&1; then
+        # Use xdg-open (works on most Linux systems)
+        xdg-open "$file" &
+        return 0
+    elif command -v open >/dev/null 2>&1; then
+        # Use open (macOS)
+        open "$file" &
+        return 0
+    elif command -v sensible-editor >/dev/null 2>&1; then
+        # Use sensible-editor (Debian/Ubuntu)
+        sensible-editor "$file" &
+        return 0
+    else
+        # Last resort: try to open with any available editor
+        for editor in code gedit mousepad leafpad; do
+            if command -v "$editor" >/dev/null 2>&1; then
+                $editor "$file" &
+                return 0
+            fi
+        done
+    fi
+    
+    return 1
+}
+
+# Truncate text to max length
+truncate_text() {
+    local text="$1"
+    local max_len="$2"
+    
+    if [[ ${#text} -gt $max_len ]]; then
+        echo "${text:0:$((max_len-3))}..."
+    else
+        echo "$text"
+    fi
+}
+
+# Get notes for display
+get_display_notes() {
+    local note_file="$NOTES_DIR/notes.txt"
+    local notes=()
+    
+    if [[ ! -f "$note_file" ]] || [[ ! -s "$note_file" ]]; then
+        echo "No notes"
+        return
+    fi
+    
+    # Read notes and format them
+    local count=0
+    while IFS='|' read -r timestamp type message && [[ $count -lt $MAX_DISPLAY_NOTES ]]; do
+        local icon=$(get_note_icon "$type")
+        local truncated_msg=$(truncate_text "$message" $MAX_LENGTH)
+        notes+=("$icon $truncated_msg")
+        ((count++))
+    done < "$note_file"
+    
+    # Join notes with separator
+    if [[ ${#notes[@]} -gt 0 ]]; then
+        local result=""
+        for i in "${!notes[@]}"; do
+            if [[ $i -gt 0 ]]; then
+                result+="$SEPARATOR"
+            fi
+            result+="${notes[$i]}"
+        done
+        echo "$result"
+    else
+        echo "No notes"
+    fi
+}
+
+# Get single note for cycling display
+get_single_note() {
+    local note_file="$NOTES_DIR/notes.txt"
+    local note_index="$1"
+    
+    if [[ ! -f "$note_file" ]] || [[ ! -s "$note_file" ]]; then
+        echo "No notes"
+        return
+    fi
+    
+    # Get total number of notes
+    local total_notes=$(wc -l < "$note_file")
+    
+    if [[ $total_notes -eq 0 ]]; then
+        echo "No notes"
+        return
+    fi
+    
+    # Calculate actual index (modulo to cycle)
+    local actual_index=$((note_index % total_notes))
+    if [[ $actual_index -eq 0 ]]; then
+        actual_index=$total_notes
+    fi
+    
+    # Get the specific note
+    local line=$(sed -n "${actual_index}p" "$note_file")
+    IFS='|' read -r timestamp type message <<< "$line"
+    
+    local icon=$(get_note_icon "$type")
+    local truncated_msg=$(truncate_text "$message" $MAX_LENGTH)
+    
+    echo "$icon $truncated_msg"
+}
+
+# Marquee effect for long text
+marquee_text() {
+    local text="$1"
+    local max_len="$2"
+    local speed="$3"
+    
+    if [[ ${#text} -le $max_len ]]; then
+        echo "$text"
+        return
+    fi
+    
+    # Simple marquee effect
+    local padding="$(printf '%*s' $max_len '')"
+    local full_text="$text$padding$text"
+    local current_pos=$(( $(date +%s) % (${#text} + $max_len) ))
+    
+    echo "${full_text:$current_pos:$max_len}"
+}
+
+# Main display function
+display_notes() {
+    local mode="${1:-cycle}"
+    
+    case "$mode" in
+        "list")
+            get_display_notes
+            ;;
+        "cycle")
+            local current_state=$(get_current_state)
+            get_single_note "$current_state"
+            # Auto-advance to next note for automatic cycling
+            local new_state=$((current_state + 1))
+            set_state "$new_state"
+            ;;
+        "marquee")
+            local notes=$(get_display_notes)
+            marquee_text "$notes" $MAX_LENGTH $MARQUEE_SPEED
+            ;;
+        *)
+            get_display_notes
+            ;;
+    esac
+}
+
+# Handle waybar click events
+handle_click() {
+    local button="$1"
+    
+    case "$button" in
+        "1")  # Left click - cycle to next note
+            local current_state=$(get_current_state)
+            local new_state=$((current_state + 1))
+            set_state "$new_state"
+            ;;
+        "2")  # Middle click - open notes in editor
+            # Use terminal emulator to launch editor (more reliable for waybar)
+            notify-send "WayNotes" "Opening notes in editor..." &
+            
+            # Try to launch in a terminal emulator
+            if command -v alacritty >/dev/null 2>&1; then
+                alacritty -e nvim "$NOTES_DIR/notes.txt" &
+            elif command -v kitty >/dev/null 2>&1; then
+                kitty nvim "$NOTES_DIR/notes.txt" &
+            elif command -v gnome-terminal >/dev/null 2>&1; then
+                gnome-terminal -- nvim "$NOTES_DIR/notes.txt" &
+            elif command -v xterm >/dev/null 2>&1; then
+                xterm -e nvim "$NOTES_DIR/notes.txt" &
+            elif command -v konsole >/dev/null 2>&1; then
+                konsole -e nvim "$NOTES_DIR/notes.txt" &
+            else
+                # Fallback: try direct launch
+                if command -v nvim >/dev/null 2>&1; then
+                    nvim "$NOTES_DIR/notes.txt" &
+                elif command -v vim >/dev/null 2>&1; then
+                    vim "$NOTES_DIR/notes.txt" &
+                elif command -v nano >/dev/null 2>&1; then
+                    nano "$NOTES_DIR/notes.txt" &
+                elif command -v code >/dev/null 2>&1; then
+                    code "$NOTES_DIR/notes.txt" &
+                elif command -v gedit >/dev/null 2>&1; then
+                    gedit "$NOTES_DIR/notes.txt" &
+                else
+                    notify-send "WayNotes" "No suitable editor found. Please install nvim, vim, nano, code, or gedit." &
+                fi
+            fi
+            ;;
+        "3")  # Right click - show recent notes
+            # Direct approach for waybar compatibility
+            if [[ -f "$NOTES_DIR/notes.txt" ]]; then
+                # Get recent notes and format them nicely
+                local recent_notes=$(note -l 3 2>/dev/null | sed 's/^[[:space:]]*[0-9]*\. //' | head -6)
+                if [[ -n "$recent_notes" ]]; then
+                    # Truncate if too long for notification
+                    local short_notes=$(echo "$recent_notes" | head -4)
+                    notify-send "WayNotes - Recent Notes" "$short_notes" &
+                else
+                    notify-send "WayNotes" "No notes found" &
+                fi
+            else
+                notify-send "WayNotes" "No notes file found" &
+            fi
+            ;;
+        *)
+            ;;
+    esac
+}
+
+# Main script logic
+main() {
+    local action="${1:-display}"
+    
+    case "$action" in
+        "display")
+            init_state
+            local mode="${2:-cycle}"
+            display_notes "$mode"
+            ;;
+        "click")
+            handle_click "$2"
+            ;;
+        "next")
+            local current_state=$(get_current_state)
+            local new_state=$((current_state + 1))
+            set_state "$new_state"
+            ;;
+        "prev")
+            local current_state=$(get_current_state)
+            local new_state=$((current_state - 1))
+            if [[ $new_state -lt 0 ]]; then
+                new_state=0
+            fi
+            set_state "$new_state"
+            ;;
+        "reset")
+            set_state "0"
+            ;;
+        "help")
+            cat << EOF
+WayNotes Waybar Module
+
+Usage: waybar-notes [ACTION] [OPTIONS]
+
+Actions:
+    display [MODE]    Display notes (default: cycle)
+    click BUTTON      Handle waybar click events
+    next              Cycle to next note
+    prev              Cycle to previous note
+    reset             Reset to first note
+    help              Show this help
+
+Display Modes:
+    cycle             Cycle through notes one by one
+    list              Show all recent notes
+    marquee           Marquee effect for long text
+
+Click Events:
+    1 (left)          Next note
+    2 (middle)        Open notes in editor
+    3 (right)         Show recent notes list
+
+Configuration:
+    Set environment variables or edit $CONFIG_DIR/config:
+    - MAX_DISPLAY_NOTES: Max notes to show in list mode (default: 5)
+    - CYCLE_INTERVAL: Seconds between auto-cycle (default: 5)
+    - MARQUEE_SPEED: Marquee animation speed (default: 0.1)
+    - MAX_LENGTH: Max text length (default: 50)
+    - SEPARATOR: Separator between notes (default: " | ")
+EOF
+            ;;
+        *)
+            echo "Unknown action: $action"
+            echo "Use 'waybar-notes help' for usage information"
+            exit 1
+            ;;
+    esac
+}
+
+# Run main function with all arguments
+main "$@"

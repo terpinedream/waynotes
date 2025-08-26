@@ -1,0 +1,8 @@
+noteticker/
+├── PKGBUILD
+├── bin/
+│   ├── note        # CLI tool for capturing notes
+│   └── waybar-notes # Waybar module script
+├── LICENSE
+└── README.md
+

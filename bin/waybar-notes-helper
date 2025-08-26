@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+# WayNotes Helper Script for Waybar
+# This script is called by waybar to open notes in an editor
+
+set -e
+
+# Configuration
+NOTES_DIR="${NOTES_DIR:-$HOME/.local/share/waynotes}"
+
+# Function to open file with editor
+open_notes_file() {
+    local file="$NOTES_DIR/notes.txt"
+    
+    if [[ ! -f "$file" ]]; then
+        notify-send "WayNotes" "No notes file found" &
+        exit 1
+    fi
+    
+    # Try to open with user's preferred editor
+    if [[ -n "$EDITOR" ]]; then
+        $EDITOR "$file" &
+        return 0
+    fi
+    
+    # Try common editors in order of preference
+    for editor in nvim vim nano code gedit; do
+        if command -v "$editor" >/dev/null 2>&1; then
+            $editor "$file" &
+            return 0
+        fi
+    done
+    
+    # Fallback to xdg-open
+    if command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "$file" &
+        return 0
+    fi
+    
+    # Last resort
+    notify-send "WayNotes" "No suitable editor found. Please set \$EDITOR environment variable." &
+    return 1
+}
+
+# Main execution
+case "${1:-open}" in
+    "open")
+        open_notes_file
+        ;;
+    "list")
+        # Show recent notes
+        if [[ -f "$NOTES_DIR/notes.txt" ]]; then
+            recent_notes=$(note -l 3 2>/dev/null | sed 's/^[[:space:]]*[0-9]*\. //' | head -4)
+            if [[ -n "$recent_notes" ]]; then
+                notify-send "WayNotes - Recent Notes" "$recent_notes" &
+            else
+                notify-send "WayNotes" "No notes found" &
+            fi
+        else
+            notify-send "WayNotes" "No notes file found" &
+        fi
+        ;;
+    *)
+        echo "Usage: $0 [open|list]"
+        exit 1
+        ;;
+esac
