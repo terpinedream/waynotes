@@ -1,0 +1,39 @@
+{
+    "custom/waynotes": {
+        "exec": "waybar-notes display cycle",
+        "on-click": "waybar-notes click 1",
+        "on-click-middle": "waybar-notes click 2",
+        "on-click-right": "waybar-notes click 3",
+        "interval": 5,
+        "format": "{}",
+        "tooltip": true,
+        "tooltip-format": "Recent Notes",
+        "class": "waynotes"
+    }
+}
+
+// ===== STYLING EXAMPLES =====
+
+// 1. Modern Glass Effect
+"css": "margin: 0 8px; padding: 6px 12px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
+
+// 2. Dark Theme with Gradient
+"css": "margin: 0 6px; padding: 5px 10px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(147, 51, 234, 0.8)); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);"
+
+// 3. Minimalist Clean
+"css": "margin: 0 4px; padding: 4px 8px; background-color: rgba(0, 0, 0, 0.4); border-radius: 6px; border-left: 3px solid #3b82f6;"
+
+// 4. Animated Border
+"css": "margin: 0 6px; padding: 5px 10px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; position: relative;"
+
+// 5. Neon Glow Effect
+"css": "margin: 0 8px; padding: 6px 12px; background: rgba(0, 0, 0, 0.8); border-radius: 10px; border: 1px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);"
+
+// 6. Material Design
+"css": "margin: 0 6px; padding: 6px 12px; background: rgba(255, 255, 255, 0.15); border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); border: none;"
+
+// 7. Cyberpunk Style
+"css": "margin: 0 8px; padding: 5px 10px; background: linear-gradient(45deg, #ff006e, #8338ec); border-radius: 4px; border: 1px solid #ff006e; box-shadow: 0 0 15px rgba(255, 0, 110, 0.3);"
+
+// 8. Elegant Dark
+"css": "margin: 0 5px; padding: 4px 10px; background: rgba(17, 24, 39, 0.9); border-radius: 12px; border: 1px solid rgba(156, 163, 175, 0.2); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"

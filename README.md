@@ -143,7 +143,7 @@ Add this to your waybar config file (usually `~/.config/waybar/config`):
         "on-click-middle": "waybar-notes click 2",
         "on-click-right": "waybar-notes click 3",
         "interval": 5,
-        "format": "📝 {}",
+        "format": "* {}",
         "tooltip": true,
         "tooltip-format": "Recent Notes",
         "class": "waynotes",
@@ -167,7 +167,7 @@ export CONFIG_DIR="$HOME/.config/waynotes"
 export MAX_NOTES=100
 
 # Note prefix for general notes
-export NOTE_PREFIX="📝"
+export NOTE_PREFIX="*"
 ```
 
 ### Configuration File
@@ -182,7 +182,7 @@ NOTES_DIR="$HOME/.local/share/waynotes"
 MAX_NOTES=100
 
 # Note prefix for general notes
-NOTE_PREFIX="📝"
+NOTE_PREFIX="*"
 
 # Waybar display settings
 MAX_DISPLAY_NOTES=5
@@ -196,12 +196,12 @@ SEPARATOR=" | "
 
 WayNotes supports different note types with appropriate icons:
 
-- **general**: 📝 (default)
-- **todo**: ☐
-- **idea**: 💡
-- **reminder**: ⏰
-- **quote**: 💬
-- **code**: 💻
+- **general**: * (default)
+- **todo**: [ ]
+- **idea**: ->
+- **reminder**: !
+- **quote**: "
+- **code**: >
 
 ## File Structure
 

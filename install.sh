@@ -80,7 +80,7 @@ NOTES_DIR="$HOME/.local/share/waynotes"
 MAX_NOTES=100
 
 # Note prefix for general notes
-NOTE_PREFIX="📝"
+NOTE_PREFIX="*"
 
 # Waybar display settings
 MAX_DISPLAY_NOTES=5

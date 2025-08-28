@@ -54,7 +54,7 @@ Add this to your waybar config (`~/.config/waybar/config`):
         "on-click-middle": "waybar-notes click 2",
         "on-click-right": "waybar-notes click 3",
         "interval": 5,
-        "format": "📝 {}",
+        "format": "* {}",
         "tooltip": false
     }
 }

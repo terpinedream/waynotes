@@ -48,12 +48,12 @@ set_state() {
 get_note_icon() {
     local type="$1"
     case "$type" in
-        "todo") echo "↪" ;;
-        "idea") echo "✔" ;;
+        "todo") echo "[ ]" ;;
+        "idea") echo "->" ;;
         "reminder") echo "!" ;;
-        "quote") echo "•" ;;
-        "code") echo "★" ;;
-        *) echo "↳" ;;
+        "quote") echo "\"" ;;
+        "code") echo ">" ;;
+        *) echo "*" ;;
     esac
 }
 

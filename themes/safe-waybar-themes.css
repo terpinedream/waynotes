@@ -1,0 +1,148 @@
+/* ========================================
+ * WayNotes Safe CSS Themes
+ * Compatible with all waybar versions
+ * ======================================== */
+
+/* ===== SAFE THEME 1: Minimal Dark ===== */
+#custom-waynotes.minimal-dark {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    margin: 0 4px;
+    border-left: 3px solid #3b82f6;
+}
+
+/* ===== SAFE THEME 2: Glass Effect (No Backdrop Filter) ===== */
+#custom-waynotes.glass {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 12px;
+    margin: 0 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== SAFE THEME 3: Gradient Blue ===== */
+#custom-waynotes.gradient-blue {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    margin: 0 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== SAFE THEME 4: Neon Green ===== */
+#custom-waynotes.neon-green {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #00ff88;
+    padding: 5px 10px;
+    border-radius: 12px;
+    margin: 0 5px;
+    border: 1px solid #00ff88;
+    box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+}
+
+/* ===== SAFE THEME 5: Purple Gradient ===== */
+#custom-waynotes.purple-gradient {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    margin: 0 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== SAFE THEME 6: Sunset ===== */
+#custom-waynotes.sunset {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    margin: 0 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== SAFE THEME 7: Ocean ===== */
+#custom-waynotes.ocean {
+    background: linear-gradient(90deg, #06b6d4, #0891b2);
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    margin: 0 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== SAFE THEME 8: Forest ===== */
+#custom-waynotes.forest {
+    background: linear-gradient(90deg, #10b981, #059669);
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    margin: 0 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== SAFE THEME 9: Material Design ===== */
+#custom-waynotes.material {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 12px;
+    margin: 0 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== SAFE THEME 10: Elegant Dark ===== */
+#custom-waynotes.elegant-dark {
+    background-color: rgba(17, 24, 39, 0.9);
+    color: #f9fafb;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin: 0 5px;
+    border: 1px solid rgba(156, 163, 175, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== SAFE THEME 11: Cyberpunk ===== */
+#custom-waynotes.cyberpunk {
+    background: linear-gradient(90deg, #dc2626, #7c2d12);
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    margin: 0 5px;
+    border: 1px solid #dc2626;
+    box-shadow: 0 0 8px rgba(220, 38, 38, 0.3);
+}
+
+/* ===== SAFE THEME 12: Minimal Clean ===== */
+#custom-waynotes.minimal-clean {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    margin: 0 4px;
+    border-left: 3px solid #3b82f6;
+}
+
+/* ===== HOVER EFFECTS (Optional) ===== */
+#custom-waynotes:hover {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+/* ===== FOCUS STATES (Optional) ===== */
+#custom-waynotes:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* ===== RESPONSIVE SIZING (Optional) ===== */
+@media (max-width: 1920px) {
+    #custom-waynotes {
+        padding: 3px 6px;
+        font-size: 0.9em;
+    }
+}

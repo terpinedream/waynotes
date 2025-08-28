@@ -1,0 +1,54 @@
+{
+    "themes": {
+        "modern-glass": {
+            "name": "Modern Glass Effect",
+            "description": "Elegant glass morphism with blur effect",
+            "css": "margin: 0 8px; padding: 6px 12px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
+        },
+        "dark-gradient": {
+            "name": "Dark Gradient",
+            "description": "Beautiful gradient with dark theme",
+            "css": "margin: 0 6px; padding: 5px 10px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(147, 51, 234, 0.8)); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);"
+        },
+        "minimalist": {
+            "name": "Minimalist Clean",
+            "description": "Clean and minimal design",
+            "css": "margin: 0 4px; padding: 4px 8px; background-color: rgba(0, 0, 0, 0.4); border-radius: 6px; border-left: 3px solid #3b82f6;"
+        },
+        "neon-glow": {
+            "name": "Neon Glow",
+            "description": "Cyberpunk style with neon glow",
+            "css": "margin: 0 8px; padding: 6px 12px; background: rgba(0, 0, 0, 0.8); border-radius: 10px; border: 1px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);"
+        },
+        "material": {
+            "name": "Material Design",
+            "description": "Google Material Design inspired",
+            "css": "margin: 0 6px; padding: 6px 12px; background: rgba(255, 255, 255, 0.15); border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); border: none;"
+        },
+        "cyberpunk": {
+            "name": "Cyberpunk",
+            "description": "Futuristic cyberpunk style",
+            "css": "margin: 0 8px; padding: 5px 10px; background: linear-gradient(45deg, #ff006e, #8338ec); border-radius: 4px; border: 1px solid #ff006e; box-shadow: 0 0 15px rgba(255, 0, 110, 0.3);"
+        },
+        "elegant-dark": {
+            "name": "Elegant Dark",
+            "description": "Sophisticated dark theme",
+            "css": "margin: 0 5px; padding: 4px 10px; background: rgba(17, 24, 39, 0.9); border-radius: 12px; border: 1px solid rgba(156, 163, 175, 0.2); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
+        },
+        "sunset": {
+            "name": "Sunset",
+            "description": "Warm sunset gradient",
+            "css": "margin: 0 6px; padding: 5px 10px; background: linear-gradient(135deg, #ff6b6b, #feca57); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);"
+        },
+        "ocean": {
+            "name": "Ocean",
+            "description": "Calming ocean blue theme",
+            "css": "margin: 0 6px; padding: 5px 10px; background: linear-gradient(135deg, #48cae4, #023e8a); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);"
+        },
+        "forest": {
+            "name": "Forest",
+            "description": "Natural green forest theme",
+            "css": "margin: 0 6px; padding: 5px 10px; background: linear-gradient(135deg, #52b788, #081c15); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);"
+        }
+    }
+}
