@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+# WayNotes Theme Switcher - Quick theme switching with waybar restart
+# Convenience script for easy theme management
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+NC='\033[0m'
+
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+show_help() {
+    echo -e "${CYAN}WayNotes Theme Switcher${NC}"
+    echo "========================="
+    echo ""
+    echo "Usage: note-theme [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  THEME_NAME              Switch to theme and restart waybar"
+    echo "  --list                  List available themes"
+    echo "  --help                  Show this help"
+    echo "  --restart               Restart waybar only"
+    echo "  --status                Show current theme status"
+    echo ""
+    echo "Examples:"
+    echo "  note-theme glass        # Switch to glass theme"
+    echo "  note-theme neon-green   # Switch to neon green theme"
+    echo "  note-theme --list       # List all themes"
+    echo "  note-theme --restart    # Restart waybar"
+    echo ""
+    echo "Available themes:"
+    echo "  glass, neon-green, gradient-blue, sunset, ocean, forest"
+    echo "  material, elegant-dark, cyberpunk, minimal-dark, minimal-clean"
+    echo "  purple-gradient"
+}
+
+switch_theme_and_restart() {
+    local theme_name="$1"
+    
+    echo -e "${CYAN}Switching to theme: ${WHITE}$theme_name${NC}"
+    
+    # Use the note script to switch theme
+    if "$SCRIPT_DIR/note" --theme "$theme_name"; then
+        echo -e "${GREEN}Theme applied successfully!${NC}"
+        
+        # Ask user if they want to restart waybar
+        echo -e "${YELLOW}Restart waybar to see changes? (y/n)${NC}"
+        read -r response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            restart_waybar
+        else
+            echo -e "${YELLOW}Remember to restart waybar manually to see changes${NC}"
+        fi
+    else
+        echo -e "${RED}Failed to apply theme${NC}"
+        exit 1
+    fi
+}
+
+restart_waybar() {
+    echo -e "${CYAN}Restarting waybar...${NC}"
+    
+    # Kill existing waybar processes
+    if pkill -x waybar >/dev/null 2>&1; then
+        echo -e "${GREEN}Stopped existing waybar${NC}"
+    else
+        echo -e "${YELLOW}No existing waybar process found${NC}"
+    fi
+    
+    # Wait a moment
+    sleep 1
+    
+    # Start waybar in background
+    if waybar >/dev/null 2>&1 & then
+        echo -e "${GREEN}Waybar restarted successfully!${NC}"
+    else
+        echo -e "${RED}Failed to restart waybar${NC}"
+        echo -e "${YELLOW}Try starting waybar manually${NC}"
+    fi
+}
+
+show_status() {
+    echo -e "${CYAN}WayNotes Theme Status${NC}"
+    echo "====================="
+    echo ""
+    
+    # Check if waybar is running
+    if pgrep -x waybar >/dev/null; then
+        echo -e "${GREEN}✓ Waybar is running${NC}"
+    else
+        echo -e "${RED}✗ Waybar is not running${NC}"
+    fi
+    
+    # Check for waybar CSS files
+    local css_files=(
+        "$HOME/.config/waybar/style.css"
+        "$HOME/.config/waybar/themes/ml4w-modern/black/style.css"
+        "$HOME/.config/waybar/themes/default/style.css"
+        "$HOME/.config/waybar/config.css"
+    )
+    
+    echo ""
+    echo -e "${CYAN}Waybar CSS files:${NC}"
+    for css_file in "${css_files[@]}"; do
+        if [[ -f "$css_file" ]]; then
+            echo -e "  ${GREEN}✓${NC} $css_file"
+        else
+            echo -e "  ${RED}✗${NC} $css_file"
+        fi
+    done
+    
+    echo ""
+    echo -e "${CYAN}Available themes:${NC}"
+    "$SCRIPT_DIR/note" --list-themes | head -n 5
+    echo -e "${YELLOW}... (use 'note-theme --list' for full list)${NC}"
+}
+
+# Main script logic
+case "${1:-}" in
+    -h|--help)
+        show_help
+        ;;
+    --list)
+        "$SCRIPT_DIR/note" --list-themes
+        ;;
+    --restart)
+        restart_waybar
+        ;;
+    --status)
+        show_status
+        ;;
+    "")
+        show_help
+        ;;
+    *)
+        switch_theme_and_restart "$1"
+        ;;
+esac

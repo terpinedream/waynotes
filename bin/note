@@ -20,6 +20,9 @@ if [[ -f "$CONFIG_DIR/config" ]]; then
     source "$CONFIG_DIR/config"
 fi
 
+# Get script directory for theme selector
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Help function
 show_help() {
     cat << EOF
@@ -35,11 +38,21 @@ Options:
     -s, --search TEXT   Search notes containing TEXT
     -t, --type TYPE     Set note type (default: general)
     -f, --file FILE     Save note to specific file
+    --theme THEME       Switch waybar theme (use --list-themes to see options)
+    --list-themes       List available themes
+    --apply-theme THEME Apply theme to specific CSS file
     -v, --version       Show version
     --clip              Capture clipboard content and save as note
 
 Note Types:
     general, todo, idea, reminder, quote, code
+
+Theme Examples:
+    note --theme glass
+    note --theme neon-green
+    note --theme gradient-blue
+    note --list-themes
+    note --apply-theme sunset ~/.config/waybar/style.css
 
 Examples:
     note "Remember to buy groceries"
@@ -49,6 +62,7 @@ Examples:
     note -t quote --clip # Capture clipboard as quote note
     note -l              # List recent notes
     note -s "groceries"  # Search for notes containing "groceries"
+    note --theme glass   # Switch to glass theme
 
 Configuration:
     Set environment variables or edit $CONFIG_DIR/config:
@@ -209,6 +223,73 @@ edit_note() {
     echo "Note updated: $edited_message"
 }
 
+# Theme switching functions
+list_themes() {
+    if [[ -f "$SCRIPT_DIR/safe-theme-selector" ]]; then
+        "$SCRIPT_DIR/safe-theme-selector" --list
+    else
+        echo "Error: safe-theme-selector not found"
+        exit 1
+    fi
+}
+
+switch_theme() {
+    local theme_name="$1"
+    local css_file="${2:-}"
+    
+    if [[ -f "$SCRIPT_DIR/safe-theme-selector" ]]; then
+        if [[ -n "$css_file" ]]; then
+            "$SCRIPT_DIR/safe-theme-selector" --apply "$theme_name" "$css_file"
+        else
+            # Try to find waybar CSS file automatically
+            local possible_css_files=(
+                "$HOME/.config/waybar/style.css"
+                "$HOME/.config/waybar/themes/ml4w-modern/black/style.css"
+                "$HOME/.config/waybar/themes/default/style.css"
+                "$HOME/.config/waybar/config.css"
+            )
+            
+            local css_found=false
+            for css_file in "${possible_css_files[@]}"; do
+                if [[ -f "$css_file" ]]; then
+                    echo "Found waybar CSS file: $css_file"
+                    "$SCRIPT_DIR/safe-theme-selector" --apply "$theme_name" "$css_file"
+                    css_found=true
+                    break
+                fi
+            done
+            
+            if [[ "$css_found" == false ]]; then
+                echo "Error: Could not find waybar CSS file automatically"
+                echo "Please specify the CSS file path:"
+                echo "  note --apply-theme $theme_name /path/to/waybar/style.css"
+                exit 1
+            fi
+        fi
+        
+        echo "Theme '$theme_name' applied successfully!"
+        echo "Restart waybar to see changes:"
+        echo "  killall waybar && waybar &"
+    else
+        echo "Error: safe-theme-selector not found"
+        exit 1
+    fi
+}
+
+apply_theme_to_file() {
+    local theme_name="$1"
+    local css_file="$2"
+    
+    if [[ -f "$SCRIPT_DIR/safe-theme-selector" ]]; then
+        "$SCRIPT_DIR/safe-theme-selector" --apply "$theme_name" "$css_file"
+        echo "Theme '$theme_name' applied to '$css_file'"
+        echo "Restart waybar to see changes"
+    else
+        echo "Error: safe-theme-selector not found"
+        exit 1
+    fi
+}
+
 # Main script logic
 main() {
     local note_type="general"
@@ -265,6 +346,27 @@ main() {
             --clip)
                 use_clipboard=true
                 shift
+                ;;
+            --theme)
+                if [[ -z "$2" ]]; then
+                    echo "Error: Theme name required for --theme"
+                    exit 1
+                fi
+                switch_theme "$2"
+                exit 0
+                ;;
+            --list-themes)
+                list_themes
+                exit 0
+                ;;
+            --apply-theme)
+                if [[ -z "$2" ]] || [[ -z "$3" ]]; then
+                    echo "Error: Theme name and CSS file path required for --apply-theme"
+                    echo "Usage: note --apply-theme THEME_NAME CSS_FILE_PATH"
+                    exit 1
+                fi
+                apply_theme_to_file "$2" "$3"
+                exit 0
                 ;;
             -*)
                 echo "Unknown option: $1"

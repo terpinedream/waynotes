@@ -192,6 +192,96 @@ MAX_LENGTH=50
 SEPARATOR=" | "
 ```
 
+## Theme Switching
+
+WayNotes includes a comprehensive theming system for the waybar module with safe, crash-proof themes.
+
+### Quick Theme Switching
+
+```bash
+# Switch to a theme (automatically finds waybar CSS file)
+note --theme glass
+note --theme neon-green
+note --theme gradient-blue
+
+# List all available themes
+note --list-themes
+
+# Apply theme to specific CSS file
+note --apply-theme sunset ~/.config/waybar/style.css
+```
+
+### Convenience Script
+
+For even easier theme switching with automatic waybar restart:
+
+```bash
+# Switch theme and restart waybar
+./bin/note-theme glass
+./bin/note-theme neon-green
+
+# List themes
+./bin/note-theme --list
+
+# Check status
+./bin/note-theme --status
+
+# Restart waybar only
+./bin/note-theme --restart
+```
+
+### Available Themes
+
+**Safe Themes (Recommended):**
+- `glass` - Semi-transparent glass effect
+- `neon-green` - Cyberpunk neon green glow
+- `gradient-blue` - Beautiful blue gradient
+- `sunset` - Warm sunset orange gradient
+- `ocean` - Calming ocean blue gradient
+- `forest` - Natural green forest gradient
+- `material` - Material Design inspired
+- `elegant-dark` - Sophisticated dark theme
+- `cyberpunk` - Futuristic red cyberpunk
+- `minimal-dark` - Simple dark with blue accent
+- `minimal-clean` - Clean minimal design
+- `purple-gradient` - Elegant purple gradient
+
+### Theme Categories
+
+**Minimal Themes:**
+- `minimal-dark` - Simple dark with blue accent
+- `minimal-clean` - Clean minimal design
+
+**Gradient Themes:**
+- `gradient-blue` - Beautiful blue gradient
+- `purple-gradient` - Elegant purple gradient
+- `sunset` - Warm sunset orange
+- `ocean` - Calming ocean blue
+- `forest` - Natural green forest
+
+**Special Effects:**
+- `glass` - Semi-transparent glass (safe version)
+- `neon-green` - Cyberpunk neon glow
+- `cyberpunk` - Futuristic red cyberpunk
+
+**Design System Themes:**
+- `material` - Material Design inspired
+- `elegant-dark` - Sophisticated dark theme
+
+### Safe Theming
+
+All themes are designed to be **waybar-safe** and won't cause crashes. They use only widely-supported CSS properties:
+
+- ✅ `background-color` with `rgba()`
+- ✅ `background` with `linear-gradient()`
+- ✅ `color`, `padding`, `margin`
+- ✅ `border-radius`, `border`, `box-shadow`
+
+**Avoided properties that cause crashes:**
+- ❌ `backdrop-filter` (causes crashes)
+- ❌ `transform` (can cause issues)
+- ❌ `animation` (may not be supported)
+
 ## Note Types
 
 WayNotes supports different note types with appropriate icons:
